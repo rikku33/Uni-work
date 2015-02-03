@@ -1,0 +1,231 @@
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.IO;
+    using System.Runtime.Serialization.Formatters.Binary;
+
+    namespace ConsoleApplication1
+    {
+        class Program
+        {
+           static void Main(string[] args)
+            {
+                StreamReader sr = new StreamReader("Transactions.txt");
+                StreamWriter fdr = new StreamWriter("DebitFile.txt", false);
+                StreamWriter fcr = new StreamWriter("CreditFile.txt", false);
+                StreamWriter ferr = new StreamWriter("ErrorFile.txt", false);
+                String line;
+                int number = 0;
+                int cr=0;
+                int dr = 0;
+
+                while ((line = sr.ReadLine() )!= null) {
+                    string[] input = line.Split(',');
+                    number++;
+                    //Truncated record
+                    try
+                    {
+                        lessthenfour(input.Length);
+                    }
+                    catch (ArgumentException)
+                    {
+                        
+                        ferr.WriteLine("Record {0}: ERROR - Truncated record!", number);
+                       
+                        continue;
+                    }
+                    // invalid account number
+                    try
+                    {
+                        bool id = Mod10Check(input[0].Trim());
+                        checkID(id);
+                    }
+                    catch (ArgumentException)
+                    {
+                        ferr.WriteLine("Record {0}: ERROR - Invalid check digit!", number);
+                        
+                        continue;
+                    }
+
+
+                    //Invalid type code
+                    try
+                    {
+                        checkType(input[1].Trim());
+                    }
+                    catch(ArgumentException)
+                    {
+                        ferr.WriteLine("Record {0}: ERROR - Invalid type code!", number);
+                      
+                        continue;
+                     }
+                    //Invalid Date
+                    DateTime time;
+                 try
+                    {
+                        time = DateTime.Parse(input[2].Trim());
+                        checkRange(time); //check if Out of range
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        ferr.WriteLine("Record {0}: ERROR - Missing Date!", number);
+                        
+                        continue;
+                        
+                    }
+                 catch (FormatException)
+                 {
+                     ferr.WriteLine("Record {0}: ERROR - Invalid Date Type!", number);
+                     continue;
+                 }
+                   catch (ArgumentException)
+                   {
+                     ferr.WriteLine("Record {0}: ERROR - Out of range!", number);
+                    
+                     continue;
+                   }
+                    // Transaction Amout
+                 try
+                 {
+                     string money = input[3].Trim();
+                     double amount = Convert.ToDouble(money);
+                     int temp = checkamount(amount);
+                     checkamountrange(temp);
+                 }
+                 catch (ArgumentNullException)
+                 {
+                     ferr.WriteLine("Record {0}: ERROR - Missing Amount!", number);
+                     continue;
+                 }
+                 catch (FormatException)
+                 {
+                     ferr.WriteLine("Record {0}: ERROR - Non-numeric!", number);
+                     continue;
+                 }
+                 catch (ArgumentException)
+                 {
+                     string money = input[3].Trim();
+                     double amount = Convert.ToDouble(money);
+                     int temp = checkamount(amount);
+                     if (temp == 2)
+                     {
+                         ferr.WriteLine("Record {0}: ERROR <0!", number);
+                     }
+                     if (temp == 3)
+                     {
+                         ferr.WriteLine("Record {0}: ERROR ==0!", number);
+                     }
+                     if (temp == 4)
+                     {
+                         ferr.WriteLine("Record {0}: ERROR >=5000!", number);
+                     }
+                     continue;
+                 }
+
+
+
+                 if (input[1].Trim().Equals("Cr"))
+                 {
+                     fcr.WriteLine("CR Record {0}: {1}", number, (input[0] + input[1] + input[2] + input[3]));
+                     cr++;
+                 }
+                 if (input[1].Trim().Equals("Dr"))
+                 {
+                     fdr.WriteLine("DR Record {0}: {1}", number,(input[0]+input[1]+input[2]+input[3]));
+                     dr++;
+                 }
+                
+
+                }
+                Console.WriteLine("Total Dr Record {0}",dr);
+                Console.WriteLine("Total Cr Record {0}",cr);
+                Console.WriteLine("Total Error Record {0}",(number - dr - cr));
+                fdr.WriteLine("Total Dr Record {0}", dr);
+                fdr.WriteLine("Total record read {0}", number);
+                fcr.WriteLine("Total Cr Record {0}", cr);
+                fcr.WriteLine("Total record read {0}", number);
+                ferr.WriteLine("Total Error Record {0}", (number - dr - cr));
+                ferr.WriteLine("Total record read {0}", number);
+                ferr.Close();
+                fcr.Close();
+                fdr.Close();
+               Console.ReadLine();
+               
+        }
+           //Truncated record
+           private static void lessthenfour(int a)
+           {
+               if (a < 4)
+               {
+                   throw new System.ArgumentException();
+               }
+           }
+           // Invalid type code 
+           private static void checkType(string a) { 
+              if (!(a.Equals("Cr")||a.Equals("Dr"))){
+                  throw new System.ArgumentException();
+              }
+           
+           }
+             // Out of range
+           private static void checkRange(DateTime time)
+           {
+               if (time.Year < 2011 || time.Year > 2012)
+               {
+                   throw new System.ArgumentException();
+               }
+           }
+            
+           private static int checkamount(double amount)
+           {
+
+               if (amount >= 5000)
+               {
+                   return 4;
+               }
+               if (amount == 0)
+               {
+                   return 3;
+               }
+               if (amount < 0)
+               {
+                   return 2;
+               }
+               return 1;
+           }
+
+           private static void checkamountrange(int a)
+           {
+               if (a == 2 || a == 3 || a == 4)
+               {
+                   throw new System.ArgumentException();
+               }
+           }
+
+           
+
+           private static bool Mod10Check(string a)
+           {
+               if (string.IsNullOrEmpty(a))
+               {
+                   return false;
+               }
+               int sumOfDigits = a.Where((e) => e >= '0' && e <= '9')
+                               .Reverse()
+                               .Select((e, i) => ((int)e - 48) * (i % 2 == 0 ? 1 : 2))
+                               .Sum((e) => e / 10 + e % 10);           
+               return sumOfDigits % 10 == 0;
+           }
+           private static void checkID(bool a) {
+               if (!a) {
+                   throw new System.ArgumentException();
+               }
+           }
+
+
+      }
+    }
+
+   
