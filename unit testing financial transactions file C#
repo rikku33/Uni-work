@@ -1,0 +1,24 @@
+For this assignment you will be working with a file of credit (essentially deposit) and debit (essentially withdrawal) transactions. The file will have several classes of detectable errors in it. Your task is to sort the transactions into three classes:
+ A file of credit transactions
+ A file of debit transactions
+ A file of transactions with detected errors
+
+Field :Client Number
+Format: 9-digit number; may have leading zeroes
+Value restrictions: Final digit must be a valid check digit*
+Field :Transaction Type
+Format: 2-characters
+Value restrictions: ‘Cr’ for a Credit transaction or ‘Dr’ for a Debit transaction
+Field: Transaction Date
+Format: dd/mm/yyyy
+Value restrictions: Transaction date must be in 2011 or 2012
+Field: Transaction Amount
+Value restrictions: 1-4 digits, a decimal place, and two digits
+Value restrictions: Must be >0 and <5000
+
+
+You will produce three output files: CreditFile.txt, DebitFile.txt and ErrorFile.txt. 
+Any transaction with a detectable error must be written to ErrorFile.txt. 
+All ‘clean’ transactions go to CreditFile.txt or DebitFile.txt depending on their transaction type code. 
+The format of the transaction records should be exactly as it was on input (e.g. comma delimited) – write transactions
+with errors to ErrorFile.txt exactly as they appeared in Transactions.txt.
