@@ -1,0 +1,9 @@
+{
+	"name": "synapseweiwei203",
+	"location": "australiasoutheast",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f6dcb742-5105-46f7-b21c-8d2f07461331",
+		"tenantId": "c187bd42-9fc8-4fc0-8723-b420a547b38d"
+	}
+}
